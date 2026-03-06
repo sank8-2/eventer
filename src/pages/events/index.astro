@@ -6,10 +6,10 @@ import { EventsContent } from '../../components/EventsContent';
 
 <Layout title="All Events - Eventer">
   <div class="flex min-h-screen bg-background">
-    <Sidebar client:load />
+    <Sidebar client:idle />
     
     <main class="flex-1 p-8 md:p-12 overflow-y-auto w-full">
-      <EventsContent client:load />
+      <EventsContent client:idle />
     </main>
   </div>
 </Layout>

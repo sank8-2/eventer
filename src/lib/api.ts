@@ -55,21 +55,20 @@ export async function fetchEventById(id: string): Promise<EventData | null> {
 
     if (eventError || !event) return null;
 
-    const { data: ticket } = await supabase
-        .from("tickets")
-        .select("*")
-        .eq("event_id", id)
-        .single();
-    const { data: travel } = await supabase
-        .from("travel_plans")
-        .select("*")
-        .eq("event_id", id)
-        .single();
-    const { data: agendaDays } = await supabase
-        .from("agenda_days")
-        .select("*")
-        .eq("event_id", id)
-        .order("sort_order");
+    const [{ data: ticket }, { data: travel }, { data: agendaDays }] =
+        await Promise.all([
+            supabase.from("tickets").select("*").eq("event_id", id).single(),
+            supabase
+                .from("travel_plans")
+                .select("*")
+                .eq("event_id", id)
+                .single(),
+            supabase
+                .from("agenda_days")
+                .select("*")
+                .eq("event_id", id)
+                .order("sort_order"),
+        ]);
 
     let agenda = [];
     if (agendaDays && agendaDays.length > 0) {
@@ -81,6 +80,7 @@ export async function fetchEventById(id: string): Promise<EventData | null> {
                 .order("sort_order");
             agenda.push({
                 day: day.day_label,
+                date: day.date || "",
                 slots: (slots || []).map((s) => ({
                     time: s.time,
                     title: s.title,
