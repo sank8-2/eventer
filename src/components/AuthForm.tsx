@@ -17,10 +17,15 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
 
         try {
             if (type === "register") {
+                const redirectUrl =
+                    typeof window !== "undefined" ? window.location.origin : "";
                 const { data, error: signUpError } = await supabase.auth.signUp(
                     {
                         email,
                         password,
+                        options: {
+                            emailRedirectTo: redirectUrl,
+                        },
                     },
                 );
                 if (signUpError) throw signUpError;
