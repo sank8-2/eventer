@@ -10,7 +10,7 @@ import netlify from "@astrojs/netlify";
 export default defineConfig({
     output: "server",
     adapter: netlify(),
-    base: "/events", // Replace "/events" with your exact subpath on your domain
+    // base: "/events", // WARNING: Only uncomment this if you are actually proxying a subpath like domain.com/events. If accessing directly, this breaks CSS.
     integrations: [react()],
 
     vite: {
