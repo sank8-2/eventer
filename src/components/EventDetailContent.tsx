@@ -16,20 +16,15 @@ import {
     Edit,
     CalendarPlus,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 import { generateICSProperty, downloadICS } from "../lib/calendar";
 
 export function EventDetailContent({ id }: { id: string }) {
+    const { user } = useAuth();
     const [event, setEvent] = useState<EventData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-        });
-
         async function loadEvent() {
             try {
                 const data = await fetchEventById(id);

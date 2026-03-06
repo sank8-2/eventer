@@ -11,18 +11,17 @@ import {
     Plane,
     LayoutList,
 } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 import { cn } from "../lib/utils";
 import { AgendaEditor } from "./AgendaEditor";
 
 export function EventEditForm({ id }: { id: string }) {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, isAdmin, isLoading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<"basic" | "agenda" | "travel">(
         "basic",
     );
-    const [isAdmin, setIsAdmin] = useState(false);
 
     const [formBasic, setFormBasic] = useState({
         title: "",
@@ -48,24 +47,13 @@ export function EventEditForm({ id }: { id: string }) {
 
     useEffect(() => {
         async function load() {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
-            if (!session) {
+            if (authLoading) return;
+            if (!user) {
                 window.location.href = "/login";
                 return;
             }
-            setUser(session.user);
 
             try {
-                // Check Admin
-                const { data: profile } = await supabase
-                    .from("profiles")
-                    .select("is_admin")
-                    .eq("id", session.user.id)
-                    .single();
-                if (profile?.is_admin) setIsAdmin(true);
-
                 const eventData = await fetchEventById(id);
                 if (!eventData) throw new Error("Event not found");
 

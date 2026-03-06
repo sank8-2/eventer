@@ -9,7 +9,7 @@ import {
     CalendarPlus,
 } from "lucide-react";
 import { generateICSProperty, downloadICS } from "../lib/calendar";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 
 type WishlistTalk = {
     wishlist_id: string;
@@ -33,20 +33,19 @@ type WishlistTalk = {
 };
 
 export function MyScheduleContent() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, isLoading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [talks, setTalks] = useState<WishlistTalk[]>([]);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
+        if (!authLoading) {
+            if (!user) {
                 window.location.href = "/login";
-                return;
+            } else {
+                fetchSchedule(user.id);
             }
-            setUser(session.user);
-            fetchSchedule(session.user.id);
-        });
-    }, []);
+        }
+    }, [authLoading, user]);
 
     const fetchSchedule = async (userId: string) => {
         setIsLoading(true);
@@ -119,7 +118,7 @@ export function MyScheduleContent() {
         }
     };
 
-    if (isLoading) {
+    if (authLoading || (isLoading && talks.length === 0)) {
         return (
             <div className="flex-1 flex items-center justify-center p-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-500" />

@@ -1,52 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Loader2, CheckCircle, XCircle, ShieldAlert } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
+import { Loader2, ShieldAlert } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 type Profile = {
     id: string;
     full_name: string;
     is_admin: boolean;
-    is_approved: boolean;
     created_at: string;
 };
 
 export function AdminDashboard() {
-    const [user, setUser] = useState<User | null>(null);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const { user, isAdmin, isLoading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [profiles, setProfiles] = useState<Profile[]>([]);
-    const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     useEffect(() => {
-        checkAuth();
-    }, []);
-
-    const checkAuth = async () => {
-        setIsLoading(true);
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
-            window.location.href = "/login";
-            return;
+        if (!authLoading) {
+            if (!user) {
+                window.location.href = "/login";
+            } else if (!isAdmin) {
+                window.location.href = "/";
+            } else {
+                loadUsers();
+            }
         }
-        setUser(session.user);
-
-        // Check Admin
-        const { data: profile } = await supabase
-            .from("profiles")
-            .select("is_admin")
-            .eq("id", session.user.id)
-            .single();
-        if (!profile?.is_admin) {
-            window.location.href = "/";
-            return;
-        }
-
-        setIsAdmin(true);
-        loadUsers();
-    };
+    }, [authLoading, user, isAdmin]);
 
     const loadUsers = async () => {
         try {
@@ -64,35 +43,7 @@ export function AdminDashboard() {
         }
     };
 
-    const toggleApproval = async (
-        profileId: string,
-        currentStatus: boolean,
-    ) => {
-        setIsProcessing(profileId);
-        try {
-            const { error } = await supabase
-                .from("profiles")
-                .update({ is_approved: !currentStatus })
-                .eq("id", profileId);
-
-            if (error) throw error;
-
-            setProfiles(
-                profiles.map((p) =>
-                    p.id === profileId
-                        ? { ...p, is_approved: !currentStatus }
-                        : p,
-                ),
-            );
-        } catch (err) {
-            console.error("Failed to update status", err);
-            alert("Failed to update user status.");
-        } finally {
-            setIsProcessing(null);
-        }
-    };
-
-    if (isLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="flex-1 flex items-center justify-center p-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
@@ -127,9 +78,6 @@ export function AdminDashboard() {
                                     Joined Date
                                 </th>
                                 <th className="p-5 font-semibold">Role</th>
-                                <th className="p-5 font-semibold text-right">
-                                    Access Status
-                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/50">
@@ -166,41 +114,6 @@ export function AdminDashboard() {
                                             <span className="inline-block px-2.5 py-1 rounded-md bg-surface border border-border text-text-secondary text-xs font-bold uppercase tracking-widest">
                                                 User
                                             </span>
-                                        )}
-                                    </td>
-                                    <td className="p-5 text-right flex justify-end">
-                                        {profile.is_admin ? (
-                                            <span className="text-text-secondary text-sm italic mr-2">
-                                                Always Approved
-                                            </span>
-                                        ) : (
-                                            <button
-                                                onClick={() =>
-                                                    toggleApproval(
-                                                        profile.id,
-                                                        profile.is_approved,
-                                                    )
-                                                }
-                                                disabled={
-                                                    isProcessing === profile.id
-                                                }
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
-                                                    profile.is_approved
-                                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
-                                                        : "bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20"
-                                                }`}
-                                            >
-                                                {isProcessing === profile.id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : profile.is_approved ? (
-                                                    <CheckCircle className="w-4 h-4" />
-                                                ) : (
-                                                    <XCircle className="w-4 h-4" />
-                                                )}
-                                                {profile.is_approved
-                                                    ? "Approved"
-                                                    : "Pending"}
-                                            </button>
                                         )}
                                     </td>
                                 </tr>

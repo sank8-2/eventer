@@ -3,20 +3,13 @@ import { fetchAllEvents } from "../lib/api";
 import { EventCard } from "./EventCard";
 import type { EventData } from "../data/mockEvents";
 import { Filter, Search, Loader2 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 
 export function EventsContent() {
+    const { user, isLoading: authLoading } = useAuth();
     const [events, setEvents] = useState<EventData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<User | null>(null);
-
     useEffect(() => {
-        // Fetch session for conditional rendering
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-        });
-
         async function loadEvents() {
             try {
                 const data = await fetchAllEvents();

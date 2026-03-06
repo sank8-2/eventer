@@ -68,8 +68,7 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
                     <p className="text-text-secondary leading-relaxed">
                         We've sent a confirmation link to{" "}
                         <strong className="text-white">{email}</strong>. Please
-                        verify your email address. Once verified, an admin must
-                        approve your account before you can access all features.
+                        verify your email address.
                     </p>
                     <a
                         href="/login"

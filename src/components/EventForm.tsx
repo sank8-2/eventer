@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { Loader2, Plus, ArrowLeft } from "lucide-react";
 import { cn } from "../lib/utils";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 
 export function EventForm() {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, isAdmin, isLoading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     const [formData, setFormData] = useState({
         title: "",
@@ -22,29 +20,10 @@ export function EventForm() {
     });
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                window.location.href = "/login";
-            } else {
-                setUser(session.user);
-                checkAdmin(session.user.id);
-            }
-            setIsCheckingAuth(false);
-        });
-    }, []);
-
-    const checkAdmin = async (userId: string) => {
-        try {
-            const { data } = await supabase
-                .from("profiles")
-                .select("is_admin")
-                .eq("id", userId)
-                .single();
-            if (data?.is_admin) setIsAdmin(true);
-        } catch (err) {
-            console.error("Failed to check admin status", err);
+        if (!authLoading && !user) {
+            window.location.href = "/login";
         }
-    };
+    }, [authLoading, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -74,7 +53,7 @@ export function EventForm() {
         }
     };
 
-    if (isCheckingAuth) {
+    if (authLoading) {
         return (
             <div className="flex-1 flex items-center justify-center min-h-[50vh]">
                 <Loader2 className="w-12 h-12 animate-spin text-primary-500" />

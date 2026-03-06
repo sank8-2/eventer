@@ -12,7 +12,7 @@ import {
     ShieldAlert,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../hooks/useAuth";
 
 const globalNav = [
     { icon: Home, label: "Dashboard", href: "/" },
@@ -27,56 +27,12 @@ export function Sidebar({ className }: { className?: string }) {
     // Use window.location.pathname for active state logic in a real client setup,
     // Since this component is rendered on the client (client:load), we can safely use window.
     const [activeHref, setActiveHref] = useState("/");
-    const [user, setUser] = useState<User | null>(null);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [isApproved, setIsApproved] = useState(true);
+    const { user, isAdmin } = useAuth();
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             setActiveHref(window.location.pathname);
         }
-
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-            if (currentUser) {
-                const { data } = await supabase
-                    .from("profiles")
-                    .select("is_admin, is_approved")
-                    .eq("id", currentUser.id)
-                    .single();
-                if (data) {
-                    if (data.is_admin) setIsAdmin(true);
-                    if (data.is_approved !== undefined)
-                        setIsApproved(data.is_approved);
-                }
-            }
-        });
-
-        // Listen for changes on auth state (log in, log out, etc.)
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-            if (currentUser) {
-                const { data } = await supabase
-                    .from("profiles")
-                    .select("is_admin, is_approved")
-                    .eq("id", currentUser.id)
-                    .single();
-                if (data) {
-                    if (data.is_admin) setIsAdmin(true);
-                    if (data.is_approved !== undefined)
-                        setIsApproved(data.is_approved);
-                }
-            } else {
-                setIsAdmin(false);
-                setIsApproved(true);
-            }
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
     const handleSignOut = async () => {
@@ -86,28 +42,6 @@ export function Sidebar({ className }: { className?: string }) {
 
     return (
         <>
-            {user && !isApproved && (
-                <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 animate-in fade-in duration-500">
-                    <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mb-6 ring-4 ring-amber-500/20">
-                        <ShieldAlert className="w-10 h-10 text-amber-500" />
-                    </div>
-                    <h2 className="text-3xl font-bold tracking-tight text-white mb-3">
-                        Pending Approval
-                    </h2>
-                    <p className="text-text-secondary text-center max-w-md leading-relaxed">
-                        Your account is currently under review by an
-                        administrator. Please check back later or contact
-                        support if you believe this is an error.
-                    </p>
-                    <button
-                        onClick={handleSignOut}
-                        className="mt-8 px-6 py-3 rounded-xl bg-surface border border-border text-white hover:bg-surface-hover font-medium flex items-center gap-2 transition-all shadow-lg"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        Sign out
-                    </button>
-                </div>
-            )}
             <nav
                 className={cn(
                     "w-64 h-screen shrink-0 border-r border-border glass flex flex-col pt-8 pb-4 px-4 sticky top-0",

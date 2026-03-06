@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import type { AgendaDayData } from "../data/mockEvents";
 import type { User } from "@supabase/supabase-js";
 import { generateICSProperty, downloadICS } from "../lib/calendar";
+import { useAuth } from "../hooks/useAuth";
 
 interface AgendaListProps {
     agenda: AgendaDayData[];
@@ -17,20 +18,16 @@ interface AgendaListProps {
 }
 
 export function AgendaList({ agenda, eventDetails }: AgendaListProps) {
+    const { user, isLoading: authLoading } = useAuth();
     const [activeDay, setActiveDay] = useState(0);
-    const [user, setUser] = useState<User | null>(null);
     const [wishlist, setWishlist] = useState<Set<string>>(new Set());
     const [isLoadingWishlist, setIsLoadingWishlist] = useState(false);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-            if (currentUser) {
-                loadWishlist(currentUser.id);
-            }
-        });
-    }, [agenda]);
+        if (!authLoading && user) {
+            loadWishlist(user.id);
+        }
+    }, [authLoading, user, agenda]);
 
     const loadWishlist = async (userId: string) => {
         try {
