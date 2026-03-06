@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Sidebar } from '../components/Sidebar';
+import { MyScheduleContent } from '../components/MyScheduleContent';
+---
+
+<Layout title="My Schedule - Eventer">
+  <div class="flex min-h-screen bg-background">
+    <Sidebar client:load />
+    
+    <main class="flex-1 p-8 md:p-12 overflow-y-auto w-full">
+      <MyScheduleContent client:load />
+    </main>
+  </div>
+</Layout>

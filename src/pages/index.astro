@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Sidebar } from '../components/Sidebar';
+import { DashboardContent } from '../components/DashboardContent';
+import { ChevronRight } from 'lucide-react';
+---
+
+<Layout title="Dashboard - Eventer">
+  <div class="flex min-h-screen bg-background">
+    <Sidebar client:load />
+    
+    <main class="flex-1 p-8 md:p-12 overflow-y-auto">
+      <header class="flex justify-between items-center mb-10">
+        <div>
+          <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-text-secondary tracking-tight">
+            Dashboard
+          </h1>
+          <p class="text-text-secondary mt-2 text-lg">
+            Welcome back, here's what's happening.
+          </p>
+        </div>
+        <a href="/events" class="hidden md:flex items-center gap-2 text-primary-400 hover:text-primary-300 font-medium transition-colors">
+          View all events <ChevronRight class="w-4 h-4" />
+        </a>
+      </header>
+
+      <DashboardContent client:load />
+    </main>
+  </div>
+</Layout>

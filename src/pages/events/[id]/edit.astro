@@ -1,0 +1,21 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { Sidebar } from '../../../components/Sidebar';
+import { EventEditForm } from '../../../components/EventEditForm';
+
+const { id } = Astro.params;
+
+if (!id) {
+    return Astro.redirect('/events');
+}
+---
+
+<Layout title="Edit Event - Eventer">
+  <div class="flex min-h-screen bg-background">
+    <Sidebar client:load />
+    
+    <main class="flex-1 p-8 md:p-12 overflow-y-auto w-full">
+      <EventEditForm id={id} client:load />
+    </main>
+  </div>
+</Layout>

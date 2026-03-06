@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { Sidebar } from '../../components/Sidebar';
+import { EventDetailContent } from '../../components/EventDetailContent';
+
+const { id } = Astro.params;
+
+if (!id) {
+    return Astro.redirect('/events');
+}
+---
+
+<Layout title="Event Details - Eventer">
+  <div class="flex min-h-screen bg-background">
+    <Sidebar client:load />
+    
+    <main class="flex-1 overflow-y-auto relative w-full">
+      <EventDetailContent id={id} client:load />
+    </main>
+  </div>
+</Layout>

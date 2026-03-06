@@ -1,0 +1,26 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { AuthForm } from '../components/AuthForm';
+import { Calendar } from 'lucide-react';
+---
+
+<Layout title="Login - Eventer">
+  <div class="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-900/20 rounded-full blur-[120px] pointer-events-none" />
+
+    <div class="flex items-center gap-3 mb-12 relative z-10">
+      <div class="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/20">
+          <Calendar class="w-6 h-6 text-white" />
+      </div>
+      <span class="text-2xl font-bold tracking-tight text-white">
+          Eventer
+      </span>
+    </div>
+
+    <div class="w-full relative z-10">
+      <AuthForm type="login" client:load />
+    </div>
+
+  </div>
+</Layout>
